@@ -30,7 +30,7 @@ class NavigationViewController: UIViewController {
     lazy var webView: WKWebView = {
         let webViewConfiguration = WKWebViewConfiguration()
         let webView = WKWebView(frame: .zero, configuration: webViewConfiguration)
-        
+        webView.navigationDelegate = self
         webView.scrollView.showsVerticalScrollIndicator = false
         webView.translatesAutoresizingMaskIntoConstraints = false
 
@@ -45,12 +45,31 @@ class NavigationViewController: UIViewController {
         loadWebView(search: search)
     }
     
+    
     private func configUI() {
-        title = "ASD"
         view.backgroundColor = .systemBackground
         
+        setupNavbar()
         configSearchBar()
         configWebView()
+    }
+    
+    private func setupNavbar() {
+        let appearance = UINavigationBarAppearance()
+        appearance.backgroundColor = UIColor(red: 0.87, green: 0.87, blue: 0.87, alpha: 1.00)
+        appearance.titleTextAttributes = [.foregroundColor: UIColor.black]
+        appearance.largeTitleTextAttributes = [.foregroundColor: UIColor.black]
+        
+        navigationItem.backBarButtonItem = UIBarButtonItem(title: "", style: .plain, target: nil, action: nil)
+        
+        let forwardBarItem = UIBarButtonItem(image: UIImage.init(systemName: "chevron.right.square.fill"), style: .plain, target: self, action: #selector(forwardAction))
+        
+        let backBarItem = UIBarButtonItem(image: UIImage.init(systemName: "chevron.backward.square.fill"), style: .plain, target: self, action: #selector(backAction))
+        
+        let reloadBarItem = UIBarButtonItem(image: UIImage.init(systemName: "arrow.uturn.left.circle.fill"), style: .plain, target: self, action: #selector(reloadWebView))
+        
+        navigationItem.rightBarButtonItems = [forwardBarItem, backBarItem]
+        navigationItem.leftBarButtonItem = reloadBarItem
     }
     
     private func setupDelegates() {
@@ -157,3 +176,44 @@ extension NavigationViewController: UITextFieldDelegate {
         return true
     }
 }
+
+extension NavigationViewController {
+    
+    @objc
+    private func reloadWebView() {
+        
+        webView.reload()
+        
+    }
+    
+    @objc
+    private func forwardAction() {
+        
+        if webView.canGoForward {
+            webView.goForward()
+        }
+    }
+    
+    @objc
+    private func backAction() {
+        if webView.canGoBack {
+            webView.goBack()
+        } else {
+            navigationController?.popViewController(animated: true)
+        }
+    }
+    
+}
+
+extension NavigationViewController: WKNavigationDelegate {
+    
+    func webView(_ webView: WKWebView, didCommit navigation: WKNavigation!) {
+        
+        print("Initializer!!!")
+    }
+    
+    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        title = webView.title
+    }
+}
+
